@@ -1,0 +1,102 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-10-14 15:24:03.557706",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "approval_request",
+  "operation",
+  "executed_by",
+  "execution_time",
+  "status",
+  "error_message",
+  "target_doctype",
+  "target_name"
+ ],
+ "fields": [
+  {
+   "fieldname": "approval_request",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Approval Request",
+   "options": "Approval Request",
+   "reqd": 1
+  },
+  {
+   "fieldname": "operation",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Operation",
+   "options": "Delete Document",
+   "reqd": 1
+  },
+  {
+   "fieldname": "executed_by",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Executed By",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "execution_time",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Execution Time",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Success\nFailed",
+   "reqd": 1
+  },
+  {
+   "fieldname": "error_message",
+   "fieldtype": "Small Text",
+   "label": "Error Message"
+  },
+  {
+   "fieldname": "target_doctype",
+   "fieldtype": "Data",
+   "label": "Target DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "target_name",
+   "fieldtype": "Data",
+   "label": "Target Name",
+   "reqd": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-10-14 17:55:41.993533",
+ "modified_by": "Administrator",
+ "module": "Chui custom-erp",
+ "name": "Approval Execution Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

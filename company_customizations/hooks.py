@@ -26,7 +26,10 @@ app_license = "mit"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/company_customizations/css/company_customizations.css"
-# app_include_js = "/assets/company_customizations/js/company_customizations.js"
+app_include_js = [
+		#"/assets/company_customizations/js/company_customizations.js",
+		"/assets/company_customizations/js/approval_actions.js",
+]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/company_customizations/css/company_customizations.css"
@@ -119,13 +122,15 @@ doctype_js = {
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
+permission_query_conditions = {
 #       "Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
+		"Approval Request":"company_customizations.approvals.permissions.approval_request_query_conditions"
+}
 #
-# has_permission = {
-#       "Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+has_permission = {
+		"Approval Request":"company_customizations.approvals.permissions.has_approval_request_permission"
+		#"Event": "frappe.desk.doctype.event.event.has_permission",
+}
 
 # DocType Class
 # ---------------
@@ -139,13 +144,16 @@ doctype_js = {
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-#       "*": {
+doc_events = {
+       "*": {
 #               "on_update": "method",
 #               "on_cancel": "method",
-#               "on_trash": "method"
-#       }
-# }
+				"on_trash": (
+					"company_customizations.approvals.guard."
+					"validate_deletion"
+				)
+	}
+}
 
 # Scheduled Tasks
 # ---------------
