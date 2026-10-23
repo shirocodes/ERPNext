@@ -156,10 +156,15 @@ def get_linked_payments(
 
     # Subtract amounts already allocated to other
     # Bank Transactions.
-    return subtract_allocations(
-        gl_account,
-        matching_vouchers,
+    #return subtract_allocations(
+    #    gl_account,
+    #    matching_vouchers,
+    #)
+    vouchers = subtract_allocations(
+    	gl_account,
+    	matching_vouchers,
     )
+    return [voucher for voucher in vouchers if abs(float(voucher.get("paid_amount") or 0)) > 0.000001]
 
 
 def get_currency_aware_pe_matching_query(
