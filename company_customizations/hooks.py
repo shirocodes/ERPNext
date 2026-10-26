@@ -26,7 +26,11 @@ app_license = "mit"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/company_customizations/css/company_customizations.css"
-# app_include_js = "/assets/company_customizations/js/company_customizations.js"
+app_include_js = [
+	#"/assets/company_customizations/js/company_customizations.js",
+	"/assets/company_customizations/js/approval_actions.js",
+	"/assets/company_customizations/js/apm_inspection.js"
+]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/company_customizations/css/company_customizations.css"
@@ -47,16 +51,9 @@ app_license = "mit"
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
-app_include_js = "/assets/company_customizations/js/apm_inspection.js"
 doctype_js = {
     "Purchase Invoice": "overrides/purchase_invoice.js",
     "APM Inspection": "overrides/apm_inspection.js",
-}
-
-doc_events = {
-    "APM Inspection": {
-        "before_save": "company_customizations.apm_inspection.update_inspection_timestamps"
-    }
 }
 # Svg Icons
 # ------------------
@@ -127,13 +124,15 @@ doc_events = {
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-#       "Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
+permission_query_conditions = {
+	#"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
+	"Approval Request":"company_customizations.approvals.permissions.approval_request_query_conditions"
+}
 #
-# has_permission = {
-#       "Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+has_permission = {
+	"Approval Request":"company_customizations.approvals.permissions.has_approval_request_permission"
+	#"Event": "frappe.desk.doctype.event.event.has_permission",
+}
 
 # DocType Class
 # ---------------
@@ -147,13 +146,19 @@ doc_events = {
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-#       "*": {
-#               "on_update": "method",
-#               "on_cancel": "method",
-#               "on_trash": "method"
-#       }
-# }
+doc_events = {
+	"APM Inspection": {
+        "before_save": "company_customizations.apm_inspection.update_inspection_timestamps"
+    },
+	"*": {
+		#"on_update": "method",
+		#"on_cancel": "method",
+		"on_trash": (
+			"company_customizations.approvals.guard."
+			"validate_deletion"
+		)
+	},
+}
 
 # Scheduled Tasks
 # ---------------
