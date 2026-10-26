@@ -206,4 +206,3 @@ function execute_deletion(frm) {
         }
     );
 }
-

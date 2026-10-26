@@ -348,4 +348,3 @@
 
     log("Universal approval UI registered");
 })();
-

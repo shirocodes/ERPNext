@@ -196,5 +196,3 @@ class TestApprovalRequest(FrappeTestCase):
                     reference_name=self.target_name,
                     reason="Duplicate request"
                 )
-
-

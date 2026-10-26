@@ -45,4 +45,3 @@ class ApprovalDecision(Document):
             _("Approval decision history cannot be deleted."),
             frappe.PermissionError
         )
-

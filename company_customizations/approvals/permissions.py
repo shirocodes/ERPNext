@@ -51,4 +51,3 @@ def approval_request_query_conditions(user=None):
         f"(`tabApproval Request`.`requested_by` = {escaped_user}"
         f" OR `tabApproval Request`.`assigned_approver` = {escaped_user})"
     )
-

@@ -310,4 +310,3 @@ def revise_request(request_name, new_reason):
     save_request(doc)
 
     return doc.name
-

@@ -112,4 +112,3 @@ def validate_deletion(doc, method=None):
         ),
         frappe.PermissionError,
     )
-

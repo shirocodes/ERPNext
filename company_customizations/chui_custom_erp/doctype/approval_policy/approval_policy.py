@@ -106,4 +106,3 @@ class ApprovalPolicy(Document):
                 _("Approval policy activation is disabled until "
                   "the deletion enforcement engine is implemented.")
             )
-

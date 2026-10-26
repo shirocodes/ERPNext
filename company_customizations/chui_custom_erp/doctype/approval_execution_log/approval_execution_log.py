@@ -35,4 +35,3 @@ class ApprovalExecutionLog(Document):
             _("Execution logs cannot be deleted."),
             frappe.PermissionError,
         )
-

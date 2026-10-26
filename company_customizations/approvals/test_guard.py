@@ -115,4 +115,3 @@ class TestDeletionGuard(FrappeTestCase):
 
         with self.assertRaises(frappe.PermissionError):
             validate_deletion(self.doc)
-
