@@ -1,0 +1,1647 @@
+frappe.ui.form.on("APM Inspection", {
+
+    refresh(frm) {
+        // TECHNICIAN WIZARD
+        if (
+            frm.doc.inspection_status === "Draft" ||
+            frm.doc.inspection_status === "In Progress"
+        ) {
+
+            frm.add_custom_button(
+                "Open Inspection Quick Entry",
+                () => {
+                    open_apm_inspection_wizard(frm);
+                }
+            );
+
+        }
+        // NETWORK REVIEW WIZARD
+        if (
+            frm.doc.inspection_status === "Submitted to Network" ||
+            frm.doc.inspection_status === "Under Network Review"
+        ) {
+
+            frm.add_custom_button(
+                "Open Network Review",
+                () => {
+                    open_apm_network_review(frm);
+                }
+            );
+
+        }
+
+    }
+
+});
+function open_apm_inspection_wizard(frm) {
+    // These hold values while moving between Step 1 and Step 2.
+    const wizard_values = {
+
+        // Step 1
+        site_name: frm.doc.site_name || "",
+        latitude: frm.doc.latitude || "",
+        longitude: frm.doc.longitude || "",
+        space_dimensions: frm.doc.space_dimensions || "",
+        field_technician_team: frm.doc.field_technician_team || "",
+        assigned_field_technician:
+            frm.doc.assigned_field_technician || "",
+        network_team_reviewer:
+            frm.doc.network_team_reviewer || "",
+
+        // Step 2
+        result: frm.doc.result || "",
+        findings: frm.doc.findings || "",
+        follow_up_required:
+            frm.doc.follow_up_required || "",
+        follow_up_notes:
+            frm.doc.follow_up_notes || "",
+        installation_consumables_needed:
+            frm.doc.installation_consumables_needed || ""
+
+    };
+    // STEP 1
+    function show_step_1() {
+
+        const dialog = new frappe.ui.Dialog({
+
+            title: "APM Inspection — Step 1 of 2",
+
+            size: "large",
+
+            fields: [
+
+                {
+                    fieldname: "site_name",
+                    label: "Site / Location",
+                    fieldtype: "Data",
+                    default: wizard_values.site_name
+                },
+
+                {
+                    fieldname: "latitude",
+                    label: "Latitude",
+                    fieldtype: "Data",
+                    default: wizard_values.latitude
+                },
+
+                {
+                    fieldname: "longitude",
+                    label: "Longitude",
+                    fieldtype: "Data",
+                    default: wizard_values.longitude
+                },
+
+                {
+                    fieldname: "space_dimensions",
+                    label: "Space Dimensions",
+                    fieldtype: "Data",
+                    default: wizard_values.space_dimensions
+                },
+
+                {
+                    fieldname: "field_technician_team",
+                    label: "Field Technician Team",
+                    fieldtype: "Link",
+                    options: "Asset Maintenance Team",
+                    default: wizard_values.field_technician_team
+                },
+
+                {
+                    fieldname: "assigned_field_technician",
+                    label: "Assigned Field Technician",
+                    fieldtype: "Link",
+                    options: "User",
+                    default:
+                        wizard_values.assigned_field_technician
+                },
+
+                {
+                    fieldname: "network_team_reviewer",
+                    label: "Network Team Reviewer",
+                    fieldtype: "Link",
+                    options: "User",
+                    default:
+                        wizard_values.network_team_reviewer
+                }
+
+            ],
+
+            primary_action_label: "Next",
+
+            primary_action(values) {
+                // Capture Step 1 values
+                wizard_values.site_name =
+                    values.site_name || "";
+
+                wizard_values.latitude =
+                    values.latitude || "";
+
+                wizard_values.longitude =
+                    values.longitude || "";
+
+                wizard_values.space_dimensions =
+                    values.space_dimensions || "";
+
+                wizard_values.field_technician_team =
+                    values.field_technician_team || "";
+
+                wizard_values.assigned_field_technician =
+                    values.assigned_field_technician || "";
+
+                wizard_values.network_team_reviewer =
+                    values.network_team_reviewer || "";
+
+                // Close Step 1 and open Step 2
+                dialog.hide();
+
+                show_step_2();
+
+            }
+
+        });
+
+        dialog.show();
+
+    }
+    // STEP 2
+    function show_step_2() {
+
+        const is_draft =
+            frm.doc.inspection_status === "Draft";
+
+        const is_in_progress =
+            frm.doc.inspection_status === "In Progress";
+
+        let action_label = "Save";
+
+        if (is_draft) {
+
+            action_label =
+                "Save & Start Inspection";
+
+        } else if (is_in_progress) {
+
+            action_label =
+                "Submit Findings to Network Team";
+
+        }
+
+
+        const dialog = new frappe.ui.Dialog({
+
+            title: "APM Inspection — Step 2 of 2",
+
+            size: "large",
+
+            fields: [
+
+                {
+                    fieldname: "result",
+                    label: "Inspection Findings Status",
+                    fieldtype: "Select",
+                    options: [
+                        "",
+                        "Pass",
+                        "Pass with Issues",
+                        "fail"
+                    ],
+                    default: wizard_values.result
+                },
+
+                {
+                    fieldname: "findings",
+                    label: "Findings",
+                    fieldtype: "Small Text",
+                    default: wizard_values.findings
+                },
+
+                {
+                    fieldname: "follow_up_required",
+                    label: "Follow-up Required",
+                    fieldtype: "Select",
+                    options: [
+                        "",
+                        "Space allocation",
+                        "Power Connection",
+                        "Security",
+                        "Visibility",
+                        "All of Above"
+                    ],
+                    default:
+                        wizard_values.follow_up_required
+                },
+
+                {
+                    fieldname: "follow_up_notes",
+                    label: "Follow-up Notes",
+                    fieldtype: "Small Text",
+                    default:
+                        wizard_values.follow_up_notes
+                },
+
+                {
+                    fieldname:
+                        "installation_consumables_needed",
+                    label:
+                        "Installation Consumables Needed",
+                    fieldtype: "Data",
+                    default:
+                        wizard_values
+                            .installation_consumables_needed
+                }
+
+            ],
+
+            primary_action_label: action_label,
+
+            primary_action(values) {
+
+                // ---------------------------------------------
+                // Capture Step 2 values
+                // ---------------------------------------------
+
+                wizard_values.result =
+                    values.result || "";
+
+                wizard_values.findings =
+                    values.findings || "";
+
+                wizard_values.follow_up_required =
+                    values.follow_up_required || "";
+
+                wizard_values.follow_up_notes =
+                    values.follow_up_notes || "";
+
+                wizard_values.installation_consumables_needed =
+                    values.installation_consumables_needed || "";
+
+
+                // ---------------------------------------------
+                // Save / workflow action
+                // ---------------------------------------------
+
+                save_inspection_from_wizard(
+                    frm,
+                    dialog,
+                    wizard_values
+                );
+
+            }
+
+        });
+
+
+        // =====================================================
+        // BACK BUTTON
+        // =====================================================
+
+        dialog.set_secondary_action_label("Back");
+
+        dialog.set_secondary_action(() => {
+
+            // Capture current Step 2 values
+            const values = dialog.get_values();
+
+            if (values) {
+
+                wizard_values.result =
+                    values.result || "";
+
+                wizard_values.findings =
+                    values.findings || "";
+
+                wizard_values.follow_up_required =
+                    values.follow_up_required || "";
+
+                wizard_values.follow_up_notes =
+                    values.follow_up_notes || "";
+
+                wizard_values.installation_consumables_needed =
+                    values.installation_consumables_needed || "";
+
+            }
+
+            dialog.hide();
+
+            show_step_1();
+
+        });
+
+
+        dialog.show();
+
+    }
+
+
+    // =========================================================
+    // START WIZARD
+    // =========================================================
+
+    show_step_1();
+
+}
+
+
+function save_inspection_from_wizard(
+    frm,
+    dialog,
+    values
+) {
+    // WRITE STEP 1 VALUES TO DOCUMENT
+    frm.set_value(
+        "site_name",
+        values.site_name
+    );
+
+    frm.set_value(
+        "latitude",
+        values.latitude
+    );
+
+    frm.set_value(
+        "longitude",
+        values.longitude
+    );
+
+    frm.set_value(
+        "space_dimensions",
+        values.space_dimensions
+    );
+
+    frm.set_value(
+        "field_technician_team",
+        values.field_technician_team
+    );
+
+    frm.set_value(
+        "assigned_field_technician",
+        values.assigned_field_technician
+    );
+
+    frm.set_value(
+        "network_team_reviewer",
+        values.network_team_reviewer
+    );
+
+
+    // =========================================================
+    // WRITE STEP 2 VALUES TO DOCUMENT
+    // =========================================================
+
+    frm.set_value(
+        "result",
+        values.result
+    );
+
+    frm.set_value(
+        "findings",
+        values.findings
+    );
+
+    frm.set_value(
+        "follow_up_required",
+        values.follow_up_required
+    );
+
+    frm.set_value(
+        "follow_up_notes",
+        values.follow_up_notes
+    );
+
+    frm.set_value(
+        "installation_consumables_needed",
+        values.installation_consumables_needed
+    );
+    // CLOSE CURRENT DIALOG
+    dialog.hide();
+    // DRAFT → IN PROGRESS
+    // Workflow action: Start Inspection
+    if (frm.doc.inspection_status === "Draft") {
+
+        frm.save()
+
+            .then(() => {
+
+                return frappe.xcall(
+                    "frappe.model.workflow.apply_workflow",
+                    {
+                        doc: frm.doc,
+                        action: "Start Inspection"
+                    }
+                );
+
+            })
+
+            .then(() => {
+
+                frappe.show_alert({
+                    message: "Inspection started",
+                    indicator: "green"
+                });
+
+                return frm.reload_doc();
+
+            })
+
+            .then(() => {
+                // Continue naturally into findings submission
+                show_submit_findings_dialog(frm);
+
+            })
+
+            .catch((error) => {
+
+                console.error(
+                    "Failed to start inspection:",
+                    error
+                );
+
+                frappe.msgprint({
+                    title:
+                        "Unable to Start Inspection",
+
+                    message:
+                        "The inspection could not be started. Please check the error.",
+
+                    indicator: "red"
+                });
+
+            });
+
+        return;
+    }
+    // IN PROGRESS → SUBMITTED TO NETWORK
+    // Workflow action:Submit Findings to Network Team
+    if (frm.doc.inspection_status === "In Progress") {
+
+        submit_findings_to_network(
+            frm,
+            null,
+            values
+        );
+
+        return;
+    }
+    // UNEXPECTED WORKFLOW STATE
+    frappe.msgprint({
+
+        title: "Inspection State",
+
+        message:
+            `This inspection is currently <b>${frm.doc.inspection_status}</b> and cannot be submitted from the technician wizard.`,
+
+        indicator: "orange"
+
+    });
+
+}
+
+
+function show_submit_findings_dialog(frm) {
+    // FINDINGS SUBMISSION DIALOG. This appears immediately after Start Inspection. For The technician to review/update the findings b4 submitting
+    const dialog = new frappe.ui.Dialog({
+
+        title: "Submit Inspection Findings",
+
+        size: "large",
+
+        fields: [
+
+            {
+                fieldname: "result",
+                label: "Inspection Findings Status",
+                fieldtype: "Select",
+                options: [
+                    "",
+                    "Pass",
+                    "Pass with Issues",
+                    "fail"
+                ],
+                default:
+                    frm.doc.result || ""
+            },
+
+            {
+                fieldname: "findings",
+                label: "Findings",
+                fieldtype: "Small Text",
+                default:
+                    frm.doc.findings || ""
+            },
+
+            {
+                fieldname: "follow_up_required",
+                label: "Follow-up Required",
+                fieldtype: "Select",
+                options: [
+                    "",
+                    "Space allocation",
+                    "Power Connection",
+                    "Security",
+                    "Visibility"
+                ],
+                default:
+                    frm.doc.follow_up_required || ""
+            },
+
+            {
+                fieldname: "follow_up_notes",
+                label: "Follow-up Notes",
+                fieldtype: "Small Text",
+                default:
+                    frm.doc.follow_up_notes || ""
+            },
+
+            {
+                fieldname:
+                    "installation_consumables_needed",
+                label:
+                    "Installation Consumables Needed",
+                fieldtype: "Data",
+                default:
+                    frm.doc
+                        .installation_consumables_needed || ""
+            }
+
+        ],
+
+        primary_action_label:
+            "Submit Findings to Network Team",
+
+        primary_action(values) {
+
+            submit_findings_to_network(
+                frm,
+                dialog,
+                values
+            );
+
+        }
+
+    });
+
+
+    dialog.show();
+
+}
+
+
+function submit_findings_to_network(
+    frm,
+    dialog,
+    values
+) {
+    // UPDATE FINDINGS FROM DIALOG
+    if (values) {
+
+        frm.set_value(
+            "result",
+            values.result || ""
+        );
+
+        frm.set_value(
+            "findings",
+            values.findings || ""
+        );
+
+        frm.set_value(
+            "follow_up_required",
+            values.follow_up_required || ""
+        );
+
+        frm.set_value(
+            "follow_up_notes",
+            values.follow_up_notes || ""
+        );
+
+        frm.set_value(
+            "installation_consumables_needed",
+            values.installation_consumables_needed || ""
+        );
+
+    }
+    // CLOSE DIALOG
+    if (dialog) {
+        dialog.hide();
+    }
+    // SAVE FINDINGS
+    frm.save()
+        // APPLY WORKFLOW
+        // In Progress -> Submit Findings to Network Team -> Submitted to Network
+        .then(() => {
+
+            return frappe.xcall(
+                "frappe.model.workflow.apply_workflow",
+                {
+                    doc: frm.doc,
+                    action:
+                        "Submit Findings to Network Team"
+                }
+            );
+
+        })
+        // SUCCESS
+        .then(() => {
+            frappe.show_alert({
+
+                message:
+                    "Findings submitted to Network Team",
+
+                indicator: "green"
+
+            });
+
+            return frm.reload_doc();
+
+        })
+        .catch((error) => {
+
+            console.error(
+                "Failed to submit findings to Network Team:",
+                error
+            );
+
+            frappe.msgprint({
+
+                title:
+                    "Unable to Submit Findings",
+
+                message:
+                    "The findings were saved, but they could not be submitted to the Network Team. Please check the error.",
+
+                indicator: "red"
+
+            });
+
+        });
+
+}
+// NETWORK REVIEW WIZARD
+function open_apm_network_review(frm) {
+
+    // SUBMITTED TO NETWORK
+    // First show the technician submission for review.
+    // Network can either: Return to Technician OR Start Network Review
+
+    if (
+        frm.doc.inspection_status ===
+        "Submitted to Network"
+    ) {
+
+        show_network_review_start_dialog(frm);
+
+        return;
+    }
+
+    // UNDER NETWORK REVIEW:  Resume the Network wizard at Step 1.
+
+    if (
+        frm.doc.inspection_status ===
+        "Under Network Review"
+    ) {
+
+        show_network_site_contact_dialog(frm);
+
+        return;
+    }
+
+    frappe.msgprint({
+        title: "Network Review Unavailable",
+        message:
+            "Network Review is not available for the current inspection status: " +
+            frappe.utils.escape_html(
+                frm.doc.inspection_status || "Unknown"
+            ),
+        indicator: "orange"
+    });
+}
+
+function show_network_review_start_dialog(frm) {
+
+    const dialog = new frappe.ui.Dialog({
+
+        title: "APM Inspection — Network Review",
+
+        size: "large",
+
+        fields: [
+
+            {
+                fieldtype: "Section Break",
+                label: "Inspection Submitted for Review"
+            },
+
+            {
+                fieldtype: "HTML",
+                fieldname: "inspection_summary"
+            },
+
+            {
+                fieldtype: "Section Break",
+                label: "Technician Submission"
+            },
+
+            {
+                fieldname: "result",
+                label: "Inspection Findings Status",
+                fieldtype: "Data",
+                read_only: 1,
+                default: frm.doc.result || ""
+            },
+
+            {
+                fieldname: "findings",
+                label: "Findings / Observations",
+                fieldtype: "Small Text",
+                read_only: 1,
+                default: frm.doc.findings || ""
+            },
+
+            {
+                fieldname: "follow_up_required",
+                label: "Follow-up Required",
+                fieldtype: "Data",
+                read_only: 1,
+                default: frm.doc.follow_up_required || ""
+            },
+
+            {
+                fieldname: "follow_up_notes",
+                label: "Follow-up Notes",
+                fieldtype: "Small Text",
+                read_only: 1,
+                default: frm.doc.follow_up_notes || ""
+            },
+
+            {
+                fieldname: "installation_consumables_needed",
+                label: "Installation Consumables Needed",
+                fieldtype: "Data",
+                read_only: 1,
+                default:
+                    frm.doc.installation_consumables_needed || ""
+            },
+
+            {
+                fieldtype: "Section Break",
+                label: "Site Information"
+            },
+
+            {
+                fieldname: "site_name",
+                label: "Site / Location",
+                fieldtype: "Data",
+                read_only: 1,
+                default: frm.doc.site_name || ""
+            },
+
+            {
+                fieldname: "field_technician_team",
+                label: "Field Technician Team",
+                fieldtype: "Data",
+                read_only: 1,
+                default: frm.doc.field_technician_team || ""
+            },
+
+            {
+                fieldname: "assigned_field_technician",
+                label: "Assigned Field Technician",
+                fieldtype: "Data",
+                read_only: 1,
+                default: frm.doc.assigned_field_technician || ""
+            },
+
+            {
+                fieldtype: "Column Break"
+            },
+
+            {
+                fieldname: "latitude",
+                label: "Latitude",
+                fieldtype: "Data",
+                read_only: 1,
+                default: frm.doc.latitude || ""
+            },
+
+            {
+                fieldname: "longitude",
+                label: "Longitude",
+                fieldtype: "Data",
+                read_only: 1,
+                default: frm.doc.longitude || ""
+            },
+
+            {
+                fieldname: "space_dimensions",
+                label: "Space Dimensions",
+                fieldtype: "Data",
+                read_only: 1,
+                default: frm.doc.space_dimensions || ""
+            }
+
+        ],
+
+        primary_action_label: "Start Network Review",
+
+        primary_action() {
+
+            start_network_review(
+                frm,
+                dialog
+            );
+
+        }
+
+    });
+    dialog.set_secondary_action_label("Return to Technician");
+
+    dialog.set_secondary_action(() => {
+        return_to_technician(frm, dialog);
+    });
+
+    // SUMMARY
+    dialog.fields_dict.inspection_summary.$wrapper.html(`
+
+        <div style="
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            ">
+
+            <div style="
+                font-size: 14px;
+                color: var(--text-color);
+                font-weight: 600;
+                margin-bottom: 8px;
+            ">
+                ${frappe.utils.escape_html(
+                    frm.doc.site_name || "Site not specified"
+                )}
+            </div>
+
+            <div style="font-size: 13px;">
+
+                <div>
+                    <strong>Technician:</strong>
+                    ${frappe.utils.escape_html(
+                        frm.doc.assigned_field_technician || "-"
+                    )}
+                </div>
+
+                <div>
+                    <strong>Technician Team:</strong>
+                    ${frappe.utils.escape_html(
+                        frm.doc.field_technician_team || "-"
+                    )}
+                </div>
+
+                <div>
+                    <strong>Submitted Status:</strong>
+                    ${frappe.utils.escape_html(
+                        frm.doc.inspection_status || "-"
+                    )}
+                </div>
+
+            </div>
+
+        </div>
+
+    `);
+
+
+    dialog.show();
+
+}
+function start_network_review(frm, dialog) {
+
+    dialog.hide();
+
+
+    frappe.dom.freeze("Starting Network Review...");
+
+
+    frappe.xcall(
+        "frappe.model.workflow.apply_workflow",
+        {
+            doc: frm.doc,
+            action: "Start Network Review"
+        }
+    )
+
+    .then(() => {
+
+        frappe.show_alert({
+
+            message: "Network Review started",
+
+            indicator: "green"
+
+        });
+
+        return frm.reload_doc();
+
+    })
+
+    .then(() => {
+
+        frappe.dom.unfreeze();
+
+        // Immediately open the actual review screen
+        show_network_site_contact_dialog(frm);
+
+    })
+
+    .catch((error) => {
+
+        frappe.dom.unfreeze();
+
+        console.error(
+            "Failed to start Network Review:",
+            error
+        );
+
+        frappe.msgprint({
+
+            title:
+                "Unable to Start Network Review",
+
+            message:
+                "The inspection could not be moved into Network Review. Please check the error.",
+
+            indicator: "red"
+
+        });
+
+    });
+
+}
+
+// NETWORK STEP 1: Site contact details
+function show_network_site_contact_dialog(frm) {
+
+    const dialog = new frappe.ui.Dialog({
+
+        title: "APM Inspection — Network Review",
+
+        size: "large",
+
+        fields: [
+
+            {
+                fieldtype: "Section Break",
+                label: "Site Contact Details"
+            },
+
+            {
+                fieldname: "contact_person_name",
+                label: "Site Contact Name",
+                fieldtype: "Data",
+                default:
+                    frm.doc.contact_person_name || ""
+            },
+
+            {
+                fieldname: "contact_person_phone",
+                label: "Site Contact Phone",
+                fieldtype: "Data",
+                default:
+                    frm.doc.contact_person_phone || ""
+            },
+
+            {
+                fieldname: "contact_person_email",
+                label: "Site Contact Email",
+                fieldtype: "Data",
+                default:
+                    frm.doc.contact_person_email || ""
+            },
+
+            {
+                fieldname: "site_electrician",
+                label: "Site Electrician Name",
+                fieldtype: "Data",
+                default:
+                    frm.doc.site_electrician || ""
+            },
+
+            {
+                fieldname: "site_electrician_number",
+                label: "Site Electrician Number",
+                fieldtype: "Data",
+                default:
+                    frm.doc.site_electrician_number || ""
+            },
+
+            {
+                fieldtype: "Column Break"
+            },
+
+            {
+                fieldname: "site_contractor",
+                label: "Site Contractor Name",
+                fieldtype: "Data",
+                default:
+                    frm.doc.site_contractor || ""
+            },
+
+            {
+                fieldname: "site_contractor_phone_no",
+                label: "Site Contractor Phone No.",
+                fieldtype: "Data",
+                default:
+                    frm.doc.site_contractor_phone_no || ""
+            },
+
+            {
+                fieldname: "site_approvals_name",
+                label: "Site Approval's Name",
+                fieldtype: "Data",
+                default:
+                    frm.doc.site_approvals_name || ""
+            },
+
+            {
+                fieldname: "site_approvals_phone_no",
+                label: "Site Approval's Phone No.",
+                fieldtype: "Data",
+                default:
+                    frm.doc.site_approvals_phone_no || ""
+            }
+        ],
+
+        primary_action_label: "Next",
+
+        primary_action() {
+
+            const values = dialog.get_values();
+
+            if (!values) {
+                return;
+            }
+
+            const required_fields = [
+                {
+                    fieldname: "contact_person_name",
+                    label: "Site Contact Name"
+                },
+                {
+                    fieldname: "contact_person_phone",
+                    label: "Site Contact Phone"
+                },
+                {
+                    fieldname: "contact_person_email",
+                    label: "Site Contact Email"
+                },
+                {
+                    fieldname: "site_electrician",
+                    label: "Site Electrician Name"
+                },
+                {
+                    fieldname: "site_electrician_number",
+                    label: "Site Electrician Number"
+                },
+                {
+                    fieldname: "site_contractor",
+                    label: "Site Contractor Name"
+                },
+                {
+                    fieldname: "site_contractor_phone_no",
+                    label: "Site Contractor Phone No."
+                },
+                {
+                    fieldname: "site_approvals_name",
+                    label: "Site Approval's Name"
+                },
+                {
+                    fieldname: "site_approvals_phone_no",
+                    label: "Site Approval's Phone No."
+                }
+            ];
+
+            const missing_fields = [];
+
+            required_fields.forEach(field => {
+
+                const value = values[field.fieldname];
+
+                if (
+                    value === undefined ||
+                    value === null ||
+                    String(value).trim() === ""
+                ) {
+                    missing_fields.push(field.label);
+                }
+
+            });
+
+            if (missing_fields.length) {
+
+                frappe.msgprint({
+                    title: "Complete Site Contact Details",
+                    message:
+                        "<p>Please complete the following fields:</p>" +
+                        "<ul>" +
+                        missing_fields
+                            .map(field => `<li>${field}</li>`)
+                            .join("") +
+                        "</ul>",
+                    indicator: "orange"
+                });
+
+                return;
+            }
+
+            // SAVE STEP 1 BEFORE MOVING TO STEP 2
+            //frappe.dom.freeze("Saving Site Contact Details...");
+
+            frm.set_value({
+
+                contact_person_name:
+                    values.contact_person_name,
+
+                contact_person_phone:
+                    values.contact_person_phone,
+
+                contact_person_email:
+                    values.contact_person_email,
+
+                site_electrician:
+                    values.site_electrician,
+
+                site_electrician_number:
+                    values.site_electrician_number,
+
+                site_contractor:
+                    values.site_contractor,
+
+                site_contractor_phone_no:
+                    values.site_contractor_phone_no,
+
+                site_approvals_name:
+                    values.site_approvals_name,
+
+                site_approvals_phone_no:
+                    values.site_approvals_phone_no
+
+            })
+
+            .then(() => {
+
+                return frm.save();
+
+            })
+
+            .then(() => {
+            //frappe.dom.unfreeze();
+
+                dialog.hide();
+
+                // Go to Step 2
+                show_network_installation_readiness_dialog(frm);
+
+            })
+
+            .catch((error) => {
+
+               // frappe.dom.unfreeze();
+                console.error(
+                    "Failed to save Site Contact Details:",
+                    error
+                );
+
+                frappe.msgprint({
+                    title:
+                        "Unable to Save Site Contact Details",
+                    message:
+                        "The Site Contact Details could not be saved. Please try again.",
+                    indicator: "red"
+                });
+
+            });
+        }
+    });
+
+    // BACK TO TECHNICIAN SUBMISSION REVIEW
+    dialog.set_secondary_action_label("Back");
+
+    dialog.set_secondary_action(() => {
+
+        dialog.hide();
+
+        show_network_review_start_dialog(frm);
+
+    });
+
+    dialog.show();
+}
+
+// STEP 2: ADD Installation readiness info.
+function show_network_installation_readiness_dialog(frm) {
+
+    const dialog = new frappe.ui.Dialog({
+
+        title: "APM Inspection — Network Review",
+
+        size: "large",
+
+        fields: [
+
+            {
+                fieldtype: "Section Break",
+                label: "Installation Readiness Check"
+            },
+
+            {
+                fieldname: "signed_approval",
+                label: "Signed Site Approval Document",
+                fieldtype: "Attach",
+                default:
+                    frm.doc.signed_approval || ""
+            },
+
+            {
+                fieldname: "location_photo",
+                label: "Approved Location Photo",
+                fieldtype: "Attach Image",
+                default:
+                    frm.doc.location_photo || ""
+            },
+
+            {
+                fieldname: "own_electrician_allowed",
+                label: "Do we need our electrician?",
+                fieldtype: "Select",
+                options: "YES\nNO",
+                default:
+                    frm.doc.own_electrician_allowed || ""
+            },
+
+            {
+                fieldtype: "Column Break"
+            },
+
+            {
+                fieldname: "are_all_consumables_ready",
+                label: "Are all Consumables ready?",
+                fieldtype: "Select",
+                options: "YES\nNO",
+                default:
+                    frm.doc.are_all_consumables_ready || ""
+            },
+            {
+                fieldname: "is_the_site_ready_for_installations",
+                label: "Is the Site Ready for Installation?",
+                fieldtype: "Select",
+                options: "YES\nNO",
+                default:
+                    frm.doc.is_the_site_ready_for_installations || ""
+            },
+
+            {
+                fieldname: "installation_time_allowed",
+                label: "Time Allowed for Installation",
+                fieldtype: "Date",
+                default:
+                    frm.doc.installation_time_allowed || ""
+            }
+        ],
+
+        primary_action_label: "Complete APM Site Review",
+
+        primary_action() {
+
+            complete_network_review(
+                frm,
+                dialog
+            );
+
+        }
+    });
+    // BACK TO SITE CONTACT DETAILS
+
+    dialog.set_secondary_action_label("Back");
+
+    dialog.set_secondary_action(() => {
+
+        dialog.hide();
+
+        show_network_site_contact_dialog(frm);
+
+    });
+
+    dialog.show();
+}
+
+// NETWORK'S COMPLETION DIALOG: Validate info to complete site inspection
+function complete_network_review(frm, dialog) {
+
+    const values = dialog.get_values();
+
+    if (!values) {
+        return;
+    }
+
+    // =============================================================
+    // VALIDATE INSTALLATION READINESS
+    // =============================================================
+
+    const required_fields = [
+        {
+            fieldname: "signed_approval",
+            label: "Signed Site Approval Document"
+        },
+        {
+            fieldname: "location_photo",
+            label: "Approved Location Photo"
+        },
+        {
+            fieldname: "own_electrician_allowed",
+            label: "Do we need our electrician?"
+        },
+        {
+            fieldname: "are_all_consumables_ready",
+            label: "Are all Consumables ready?"
+        },
+        {
+            fieldname: "is_the_site_ready_for_installations",
+            label: "Is the Site Ready for Installation?",
+        },
+        {
+            fieldname: "installation_time_allowed",
+            label: "Time Allowed for Installation"
+        }
+    ];
+
+    const missing_fields = [];
+
+    required_fields.forEach(field => {
+
+        const value = values[field.fieldname];
+
+        if (
+            value === undefined ||
+            value === null ||
+            String(value).trim() === ""
+        ) {
+            missing_fields.push(field.label);
+        }
+
+    });
+
+    if (missing_fields.length) {
+
+        frappe.msgprint({
+            title: "Complete Installation Readiness",
+            message:
+                "<p>Please complete the following fields:</p>" +
+                "<ul>" +
+                missing_fields
+                    .map(field => `<li>${field}</li>`)
+                    .join("") +
+                "</ul>",
+            indicator: "orange"
+        });
+
+        return;
+    }
+
+    // CONFIRM COMPLETION
+    frappe.confirm(
+        "Are you sure you want to complete the APM site review?",
+        () => {
+            // SAVE STEP 2
+
+            frm.set_value({
+
+                signed_approval:
+                    values.signed_approval,
+
+                location_photo:
+                    values.location_photo,
+
+                own_electrician_allowed:
+                    values.own_electrician_allowed,
+
+                are_all_consumables_ready:
+                    values.are_all_consumables_ready,
+                is_the_site_ready_for_installations:
+                    values.is_the_site_ready_for_installations,
+                installation_time_allowed:
+                    values.installation_time_allowed
+
+            })
+
+            .then(() => {
+                return frm.save();
+
+            })
+            // ONLY AFTER SUCCESSFUL SAVE:USE NATIVE WORKFLOW TRANSITION
+
+            .then(() => {
+
+                return frappe.xcall(
+                    "frappe.model.workflow.apply_workflow",
+                    {
+                        doc: frm.doc,
+                        action: "Complete Inspection"
+                    }
+                );
+
+            })
+
+            .then(() => {
+
+                frappe.show_alert({
+                    message:
+                        "APM site review completed",
+                    indicator: "green"
+                });
+
+                dialog.hide();
+
+                return frm.reload_doc();
+
+            })
+
+            .catch((error) => {
+                console.error(
+                    "Failed to complete APM site review:",
+                    error
+                );
+
+                frappe.msgprint({
+                    title:
+                        "Unable to Complete APM Site Review",
+                    message:
+                        "The APM site review could not be completed. " +
+                        "Please check the workflow status and try again.",
+                    indicator: "red"
+                });
+
+            });
+
+        }
+    );
+}
+
+// RETURN TO TECHNICIAN DIALOG FLOW
+function return_to_technician(frm, dialog) {
+    // FIRST ASK FOR THE REASON
+
+    const return_dialog = new frappe.ui.Dialog({
+
+        title: "Return to Technician",
+
+        size: "small",
+
+        fields: [
+
+            {
+                fieldtype: "HTML",
+                fieldname: "return_instruction"
+            },
+
+            {
+                fieldname: "additional_information",
+                label: "Why is this inspection being returned?",
+                fieldtype: "Small Text",
+                reqd: 1,
+                default:
+                    frm.doc.additional_information || ""
+            }
+
+        ],
+
+        primary_action_label: "Return to Technician",
+
+        primary_action() {
+
+            const values =
+                return_dialog.get_values();
+
+            if (!values) {
+                return;
+            }
+
+            const reason =
+                values.additional_information;
+
+            if (
+                !reason ||
+                String(reason).trim() === ""
+            ) {
+
+                frappe.msgprint({
+                    title:
+                        "Reason Required",
+                    message:
+                        "Please provide the reason for returning this inspection to the technician.",
+                    indicator: "orange"
+                });
+
+                return;
+            }
+
+            // ONLY NOW EXECUTE THE WORKFLOW TRANSITION
+            return_dialog.hide();
+            dialog.hide();
+
+            // Save reason first
+            frm.set_value(
+                "additional_information",
+                reason
+            )
+
+            .then(() => {
+
+                return frm.save();
+
+            })
+
+            .then(() => {
+
+                //Do NOT manually change inspection_status. THE workflow controls this
+
+                return frappe.xcall(
+                    "frappe.model.workflow.apply_workflow",
+                    {
+                        doc: frm.doc,
+                        action: "Return to Technician"
+                    }
+                );
+
+            })
+
+            .then(() => {
+
+                frappe.show_alert({
+                    message:
+                        "Inspection returned to Technician",
+                    indicator: "orange"
+                });
+
+                return frm.reload_doc();
+
+            })
+
+            .catch((error) => {
+
+                console.error(
+                    "Failed to return inspection:",
+                    error
+                );
+
+                frappe.msgprint({
+                    title:
+                        "Unable to Return Inspection",
+                    message:
+                        "The inspection could not be returned to the Technician. " +
+                        "Please check the workflow status and permissions.",
+                    indicator: "red"
+                });
+
+            });
+
+        }
+    });
+
+    return_dialog.fields_dict.return_instruction.$wrapper.html(`
+        <div style="
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-color);
+        ">
+            <div style="
+                font-size: 13px;
+                line-height: 1.5;
+                color: var(--text-color);
+            ">
+                Please provide the reason why this inspection
+                needs to be returned to the assigned technician.
+            </div>
+        </div>
+    `);
+
+    // CANCEL = DO NOTHING
+    // The original Network Review dialog remains available.
+    // No save and no workflow transition occurs.
+
+    return_dialog.set_secondary_action_label("Cancel");
+
+    return_dialog.set_secondary_action(() => {
+
+        return_dialog.hide();
+
+        // Keep the original review screen open.
+        dialog.show();
+
+    });
+
+    return_dialog.show();
+}
