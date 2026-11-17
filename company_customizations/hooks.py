@@ -31,6 +31,15 @@ app_include_js = [
 		"/assets/company_customizations/js/approval_actions.js",
 ]
 
+fixtures = [
+    {
+        "dt": "DocType",
+        "filters": [
+            ["name", "=", "CHUI eTIMS Submission"]
+        ],
+    },
+]
+
 # include js, css files in header of web template
 # web_include_css = "/assets/company_customizations/css/company_customizations.css"
 # web_include_js = "/assets/company_customizations/js/company_customizations.js"
